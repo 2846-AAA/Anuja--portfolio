@@ -1,0 +1,170 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ANUJA_DHAMDHERE // COMMAND_CENTER_v7</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Space+Mono:wght@400;700&display=swap');
+
+        :root {
+            --neon: #00f2ff;
+            --bg: #020617;
+            --border: rgba(0, 242, 255, 0.5);
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            background: var(--bg); color: white;
+            font-family: 'Space Mono', monospace; overflow: hidden;
+        }
+
+        .universe {
+            perspective: 2000px;
+            height: 100vh; width: 100vw;
+            display: flex; justify-content: center; align-items: center;
+            background: radial-gradient(circle at center, #083344 0%, #000 90%);
+        }
+
+        /* Fixed Core */
+        .core {
+            width: 300px; height: 300px;
+            border: 2px solid var(--neon);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 0 50px var(--neon), inset 0 0 30px var(--neon);
+            z-index: 5;
+            pointer-events: none; /* Allows clicks to pass through to nodes if overlapping */
+        }
+
+        .core-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem; text-align: center;
+            text-shadow: 0 0 15px var(--neon);
+            letter-spacing: 5px;
+        }
+
+        /* Interaction Nodes */
+        .node {
+            position: absolute;
+            min-width: 180px; padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--border);
+            text-align: center; cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon);
+            z-index: 20; /* Ensures buttons are on the very top layer */
+        }
+
+        .node:hover {
+            background: var(--neon); color: #000;
+            box-shadow: 0 0 40px var(--neon);
+            transform: scale(1.1);
+        }
+
+        /* Fixed Positioning */
+        .n1 { transform: translate(-350px, -150px); }
+        .n2 { transform: translate(350px, -150px); }
+        .n3 { transform: translate(-350px, 150px); }
+        .n4 { transform: translate(350px, 150px); }
+
+        /* Overlay System */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none; /* Controlled by JS */
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+
+        .data-panel {
+            width: 80%; max-width: 800px;
+            background: #000; border: 1px solid var(--neon);
+            padding: 40px; position: relative;
+            box-shadow: 0 0 100px rgba(0, 242, 255, 0.2);
+        }
+
+        .close-btn {
+            position: absolute; top: 15px; right: 15px;
+            color: var(--neon); cursor: pointer; font-family: 'Orbitron';
+        }
+
+        .content h2 { color: var(--neon); border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .content p { line-height: 1.6; color: #cbd5e1; }
+
+        @media (max-width: 800px) {
+            .universe { flex-direction: column; overflow-y: auto; height: auto; padding: 40px 0; }
+            .node { position: static; margin: 10px; transform: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="universe">
+        <div class="core">
+            <div class="core-text">ANUJA<br>DHAMDHERE</div>
+        </div>
+
+        <div class="node n1" onclick="openPanel('bio')">/USR/BIO</div>
+        <div class="node n2" onclick="openPanel('skills')">/BIN/TECH</div>
+        <div class="node n3" onclick="openPanel('projects')">/DEV/CODE</div>
+        <div class="node n4" onclick="openPanel('exp')">/MNT/HISTORY</div>
+    </div>
+
+    <div id="overlay" class="overlay">
+        <div class="data-panel">
+            <div class="close-btn" onclick="closePanel()">[ X_CLOSE ]</div>
+            <div id="content-area" class="content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Verified Content Data
+        const info = {
+            bio: `<h2>SYSTEM_PROFILE</h2>
+                  <p><b>NAME:</b> ANUJA DHAMDHERE</p>
+                  <p><b>ACADEMICS:</b> BCA (7.2 CGPA) | HSC (89.67%)</p>
+                  <p>Entry-level Python Developer with a passion for building high-performance backend architectures using Django and Flask.</p>`,
+
+            skills: `<h2>CORE_SKILLS</h2>
+                    <p><b>LANGUAGES:</b> Python (OOP), JavaScript, SQL</p>
+                    <p><b>FRAMEWORKS:</b> Django, Flask, React, Django REST Framework</p>
+                    <p><b>DATABASES:</b> PostgreSQL, MySQL, SQLite</p>
+                    <p><b>TOOLS:</b> Docker, Git, Linux, Postman</p>`,
+
+            projects: `<h2>CODE_LAB</h2>
+                      <p><b>1. COMPLAINT MGMT SYSTEM:</b> Django-based app with role-based JWT authentication and PostgreSQL backend.</p>
+                      <p><b>2. AI SUPPORT BOT:</b> Flask-powered chatbot utilizing RESTful APIs for customer support automation.</p>`,
+
+            exp: `<h2>HISTORY_LOG</h2>
+                  <p><b>Python Developer Intern</b></p>
+                  <p>Cravita Technologies | June 2025 - Dec 2025</p>
+                  <ul>
+                      <li>Built RESTful APIs following MVC.</li>
+                      <li>Implemented JWT security protocols.</li>
+                      <li>Applied DSA for logic optimization.</li>
+                  </ul>`
+        };
+
+        // Guaranteed Click Functions
+        function openPanel(key) {
+            console.log("Opening:", key); // Check PyCharm Console
+            document.getElementById('content-area').innerHTML = info[key];
+            document.getElementById('overlay').style.display = 'flex';
+        }
+
+        function closePanel() {
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        // Close when clicking outside the panel
+        window.onclick = function(event) {
+            const overlay = document.getElementById('overlay');
+            if (event.target == overlay) {
+                closePanel();
+            }
+        }
+    </script>
+</body>
+</html>
